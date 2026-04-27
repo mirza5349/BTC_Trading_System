@@ -1,0 +1,87 @@
+# =============================================================================
+# Asset Configuration — BTC/USDT
+# =============================================================================
+
+asset:
+  symbol: "BTCUSDT"
+  base_asset: "BTC"
+  quote_asset: "USDT"
+  timeframe: "15m"
+  exchange: "binance"
+
+# Supported timeframes for feature engineering
+timeframes:
+  - "1m"
+  - "5m"
+  - "15m"
+  - "1h"
+  - "4h"
+  - "1d"
+
+# Market data ingestion settings
+market_data:
+  symbol: "BTCUSDT"
+  default_timeframe: "15m"
+  default_start_date: "2024-01-01"
+  storage_format: "parquet"
+  raw_data_dir: "data/raw/market"
+  processed_data_dir: "data/processed/market"
+  request_limit: 1000
+  request_timeout: 30.0
+  max_retries: 3
+
+# News data ingestion settings
+news_data:
+  asset: "BTC"
+  provider: "cryptocompare"
+  default_start_date: "2024-01-01"
+  raw_data_dir: "data/raw/news"
+  processed_data_dir: "data/processed/news"
+  page_size: 100
+  request_timeout: 30.0
+  max_retries: 3
+  max_pages: 500
+  btc_keywords:
+    - "btc"
+    - "bitcoin"
+    - "spot bitcoin etf"
+    - "bitcoin etf"
+    - "bitcoin network"
+    - "bitcoin miner"
+    - "bitcoin miners"
+    - "bitcoin mining"
+    - "bitcoin halving"
+
+# Feature engineering settings
+features:
+  feature_version: "v1"
+  symbol: "BTCUSDT"
+  asset: "BTC"
+  timeframe: "15m"
+  market_windows: [1, 2, 4, 8]
+  news_lookback_windows: ["1h", "4h"]
+  output_dir: "data/features"
+  fill_missing_news_with_zero: true
+  include_breakout_features: true
+  include_calendar_features: true
+  include_optional_news_features: true
+  news_burst_threshold_1h: 3
+  news_burst_threshold_4h: 8
+
+# Label generation settings
+labels:
+  label_version: "v1"
+  primary_target: "target_up_2bars"
+  horizon_bars: 2
+  binary_threshold: 0.0
+  include_regression_target: true
+  include_optional_targets: true
+  optional_horizon_bars: [4]
+
+# Supervised dataset settings
+datasets:
+  dataset_version: "v1"
+  symbol: "BTCUSDT"
+  asset: "BTC"
+  timeframe: "15m"
+  output_dir: "data/datasets"

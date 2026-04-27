@@ -1,0 +1,199 @@
+# =============================================================================
+# Model Configuration
+# =============================================================================
+
+model:
+  algorithm: "lightgbm"
+  prediction_horizon_minutes: 30
+  target_type: "binary_return_direction"
+  
+  # Training parameters (defaults for LightGBM)
+  params:
+    n_estimators: 500
+    max_depth: 6
+    learning_rate: 0.05
+    num_leaves: 31
+    min_child_samples: 20
+    subsample: 0.8
+    colsample_bytree: 0.8
+
+  # Feature selection
+  feature_groups:
+    - "market_technical"
+    - "market_microstructure"
+    - "news_sentiment"
+
+# Text model configuration
+text_models:
+  sentiment:
+    name: "ProsusAI/finbert"
+    max_length: 512
+  embeddings:
+    name: "sentence-transformers/all-MiniLM-L6-v2"
+    max_length: 256
+
+# Validation
+validation:
+  method: "walk_forward"
+  n_splits: 5
+  train_window_days: 60
+  test_window_days: 7
+  gap_days: 1
+
+training:
+  model_version: "v1"
+  primary_target: "target_up_2bars"
+  random_seed: 42
+  save_fold_models: true
+  device: "cpu"
+  allow_cuda_fallback_to_cpu: true
+  probability_threshold: 0.5
+  include_feature_patterns: []
+  exclude_feature_patterns: []
+
+walk_forward:
+  mode: "expanding_window"
+  min_train_rows: 1000
+  validation_rows: 250
+  step_rows: 250
+  max_folds:
+  rolling_train_rows:
+
+lightgbm:
+  objective: "binary"
+  metric: "binary_logloss"
+  learning_rate: 0.05
+  n_estimators: 200
+  num_leaves: 31
+  max_depth: -1
+  min_child_samples: 20
+  subsample: 0.8
+  colsample_bytree: 0.8
+  random_state: 42
+  device_type: "cpu"
+  verbosity: -1
+
+artifacts:
+  models_dir: "data/models"
+  evaluation_dir: "data/evaluation"
+
+experiments:
+  registry_path: "data/experiments/run_registry.parquet"
+  summary_dir: "data/experiments"
+  default_sort_metric: "roc_auc_mean"
+  default_status_for_new_runs: "candidate"
+
+reports:
+  output_dir: "data/reports"
+  write_markdown: true
+  top_k_feature_importance: 20
+
+backtest_strategy:
+  strategy_version: "v1"
+  type: "long_only_threshold"
+  entry_threshold: 0.55
+  exit_threshold: 0.45
+  minimum_holding_bars: 1
+  cooldown_bars: 0
+
+backtest_execution:
+  fill_model: "next_bar_open"
+  starting_cash: 100.0
+  fee_rate: 0.001
+  slippage_rate: 0.0005
+  max_position_fraction: 1.0
+  allow_fractional_position: true
+
+simulations:
+  backtests_dir: "data/backtests"
+  paper_simulations_dir: "data/paper_simulations"
+  default_sort_metric: "total_return"
+
+paper_loop:
+  output_dir: "data/paper_loop"
+  loop_id: "paper_fee_4_best"
+  target_name: "target_long_net_positive_4bars"
+  target_key: "fee_4"
+  model_run_id: "RUN20260426T163315Z"
+  optimization_id: "OPT20260426T170429Z"
+  symbol: "BTCUSDT"
+  timeframe: "15m"
+  feature_version: "v1"
+  provider: "cryptocompare"
+  interval_minutes: 15
+  candle_close_safety_minutes: 0
+  poll_buffer_seconds: 5
+  market_history_rows: 64
+  prediction_threshold: 0.5
+  write_markdown: true
+  daemon_log_filename: "paper_loop.log"
+
+validation_suite:
+  output_dir: "data/reports/validation"
+  random_seed: 42
+  bucket_edges: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  top_failure_cases: 5
+  drawdown_case_count: 3
+  overtrading_trades_per_day_threshold: 10.0
+  tiny_edge_after_fees_threshold: 0.0
+
+optimization_search_space:
+  entry_threshold: [0.6, 0.65, 0.7, 0.75]
+  exit_threshold: [0.45, 0.5, 0.55]
+  minimum_holding_bars: [2, 4, 8, 16]
+  cooldown_bars: [2, 4, 8]
+  max_position_fraction: [0.25, 0.5, 1.0]
+
+optimization_selection:
+  max_allowed_drawdown: 0.35
+  max_allowed_trades: 500
+  max_allowed_fee_to_starting_cash: 2.0
+  minimum_total_return: 0.0
+  top_k: 20
+  ranking_metric: "risk_adjusted_score"
+
+optimization_storage:
+  output_dir: "data/strategy_optimization"
+
+multi_horizon:
+  horizon_bars: [4, 8, 16]
+  default_feature_version: "v2_sentiment"
+  label_version_prefix: "v1"
+  dataset_version_prefix: "v1"
+  model_version_prefix: "v1"
+  output_dir: "data/reports/horizon_comparison"
+  max_folds_override:
+
+fee_aware_targets:
+  default_feature_version: "v2_sentiment"
+  target_keys: ["fee_4", "fee_8", "fee_16", "ret025_8", "ret050_16", "ret075_16"]
+  fee_rate: 0.001
+  slippage_rate: 0.0005
+  default_round_trip_cost: 0.003
+  positive_class_rate_min: 0.02
+  positive_class_rate_max: 0.98
+  label_version_prefix: "fee"
+  dataset_version_prefix: "fee"
+  model_version_prefix: "fee"
+  output_dir: "data/reports/target_comparison"
+  max_folds_override:
+
+nlp:
+  model_name: "ProsusAI/finbert"
+  enrichment_version: "v1"
+  text_mode: "title_plus_summary"
+  batch_size: 16
+  device: "cpu"
+  allow_cuda_fallback_to_cpu: true
+  max_length: 256
+
+sentiment_features:
+  enabled: true
+  feature_version: "v2_sentiment"
+  lookback_windows: ["1h", "4h"]
+  use_enriched_news_store: true
+  positive_burst_threshold_1h: 2
+  negative_burst_threshold_1h: 2
+
+storage:
+  enriched_news_dir: "data/enriched_news"

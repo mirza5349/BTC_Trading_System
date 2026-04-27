@@ -1,0 +1,21 @@
+# =============================================================================
+# Risk Management Configuration
+# =============================================================================
+
+risk:
+  # Safety flags
+  paper_trading_only: true
+  allow_live_trading: false
+
+  # Position sizing
+  max_position_fraction: 0.01        # Max 1% of portfolio per trade
+  max_total_exposure_fraction: 0.05   # Max 5% total exposure
+  
+  # Loss limits
+  max_daily_loss_fraction: 0.02       # Stop trading after 2% daily loss
+  max_drawdown_fraction: 0.05         # Hard stop at 5% drawdown from peak
+
+  # Order constraints
+  min_confidence_threshold: 0.6       # Minimum model confidence to generate signal
+  max_trades_per_day: 20              # Rate limit
+  cooldown_after_loss_minutes: 30     # Wait after a losing trade
