@@ -1085,6 +1085,6 @@ artifacts:
 
 ---
 
-## License
+## Author
 
-MIT
+Mirza Anas
