@@ -506,7 +506,10 @@ class TestCli:
 
     def test_show_paper_status_handles_missing_status(self) -> None:
         """show-paper-status should handle missing loop status cleanly."""
-        result = self.runner.invoke(cli, ["show-paper-status"])
+        result = self.runner.invoke(
+            cli,
+            ["show-paper-status", "--loop-id", "LOOP404"],
+        )
         assert result.exit_code == 0
         assert "No stored paper-loop status found" in result.output
 
